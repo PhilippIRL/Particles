@@ -2,15 +2,129 @@
 <html>
 <head>
   <title>Particletest</title>
+  <style>
+    html, body {
+      width:  100%;
+      height: 100%;
+      margin: 0px;
+      overflow: hidden;
+      background-color: black;
+    }
+  </style>
   <script>
 
-    function start(){
+    var canvas;
+    var ctx;
+    var objs = [];
 
+    window.onload = function(){
+      start();
+    }
+
+    function start(){
+      canvas = document.getElementById("canvas");
+      ctx = canvas.getContext("2d");
+      window.setInterval(update, 25);
+    }
+
+    function addobj(x, y, state, movex, movey, lifetime, color){
+      var obj = {x: x, y: y, state: state, movex: movex, movey: movey, lifetime: lifetime, color: color};
+      objs.push(obj);
+    }
+
+    function update(){
+
+      for(var i = 0; i < objs.length; i++){
+        if(objs[i].x < 0 || objs[i].x > canvas.width || objs[i].y < 0 || objs[i].y > canvas.height || objs[i].lifetime <= 0){
+          if(objs[i].state == 0){
+            makeexp(objs[i].x, objs[i].y, objs[i].color);
+          }
+          objs.splice(i, 1);
+        }
+      }
+
+      for(var i = 0; i < objs.length; i++){
+        objs[i].x += objs[i].movex;
+        objs[i].y += objs[i].movey;
+        objs[i].lifetime--;
+      }
+
+      draw();
+    }
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function draw(){
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      ctx.fillStyle = "rgb(0,0,0)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      for(var i = 0; i < objs.length; i++){
+        if(objs[i].state == 0) {
+          ctx.beginPath();
+          ctx.lineWidth="1";
+          ctx.strokeStyle = "rgb(255,255,255)";
+          ctx.rect(objs[i].x, objs[i].y, 5, 10);
+          ctx.stroke();
+        } else if(objs[i].state == 1) {
+          ctx.beginPath();
+          ctx.lineWidth="1";
+          ctx.strokeStyle = objs[i].color;
+          ctx.rect(objs[i].x, objs[i].y, 5, 5);
+          ctx.stroke();
+        }
+      }
+    }
+
+    function makeexp(x, y, color){
+      console.log("exp;x=" + x + ";y=" + y);
+
+      //RECHTS UNTEN
+      addobj(x, y, 1, 1, 1, getRandomInt(30, 50), color);
+      addobj(x, y, 1, 2, 2, getRandomInt(30, 50), color);
+      addobj(x, y, 1, 3, 3, getRandomInt(30, 50), color);
+
+      //UNTEN
+      addobj(x, y, 1, 0, 1, getRandomInt(30, 50), color);
+      addobj(x, y, 1, 0, 2, getRandomInt(30, 50), color);
+      addobj(x, y, 1, 0, 4, getRandomInt(30, 50), color);
+
+      //OBEN
+      addobj(x, y, 1, 0, -1, getRandomInt(30, 50), color);
+      addobj(x, y, 1, 0, -2, getRandomInt(30, 50), color);
+      addobj(x, y, 1, 0, -4, getRandomInt(30, 50), color);
+
+      //LINKS UNTEN
+      addobj(x, y, 1, -1, 1, getRandomInt(30, 50), color);
+      addobj(x, y, 1, -2, 2, getRandomInt(30, 50), color);
+      addobj(x, y, 1, -3, 3, getRandomInt(30, 50), color);
+
+      //LINKS
+      addobj(x, y, 1, -1, 0, getRandomInt(30, 50), color);
+      addobj(x, y, 1, -2, 0, getRandomInt(30, 50), color);
+      addobj(x, y, 1, -4, 0, getRandomInt(30, 50), color);
+
+      //RECHTS
+      addobj(x, y, 1, 1, 0, getRandomInt(30, 50), color);
+      addobj(x, y, 1, 2, 0, getRandomInt(30, 50), color);
+      addobj(x, y, 1, 4, 0, getRandomInt(30, 50), color);
+
+      //LINKS OBEN
+      addobj(x, y, 1, -1, -1, getRandomInt(30, 50), color);
+      addobj(x, y, 1, -2, -2, getRandomInt(30, 50), color);
+      addobj(x, y, 1, -3, -3, getRandomInt(30, 50), color);
+
+      //RECHTS OBEN
+      addobj(x, y, 1, 1, -1, getRandomInt(30, 50), color);
+      addobj(x, y, 1, 2, -2, getRandomInt(30, 50), color);
+      addobj(x, y, 1, 3, -3, getRandomInt(30, 50), color);
     }
 
   </script>
 </head>
 <body>
-  <canvas id="canvas" onload="start()"></canvas>
+  <canvas id="canvas"></canvas>
 </body>
 </html>
