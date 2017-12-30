@@ -23,12 +23,16 @@
     var shift = false;
     var showhud = true;
     var urlparams;
+    var screenshotpending = false;
+    var screenshots = [];
+    var screenshotsaved = 0;
 
     window.onload = function() {
       start();
     }
 
     function getAllUrlParams(e){var t=e?e.split("?")[1]:window.location.search.slice(1),i={};if(t){t=t.split("#")[0];for(var r=t.split("&"),n=0;n<r.length;n++){var o=r[n].split("="),l=void 0,s=o[0].replace(/\[\d*\]/,function(e){return l=e.slice(1,-1),""}),a="undefined"==typeof o[1]?!0:o[1];s=s.toLowerCase(),a=a.toLowerCase(),i[s]?("string"==typeof i[s]&&(i[s]=[i[s]]),"undefined"==typeof l?i[s].push(a):i[s][l]=a):i[s]=a}}return i}
+    function dataURItoBlob(t){for(var r=atob(t.split(",")[1]),e=t.split(",")[0].split(":")[1].split(";")[0],n=new ArrayBuffer(r.length),a=new Uint8Array(n),l=0;l<r.length;l++)a[l]=r.charCodeAt(l);var o=new Blob([n],{type:e});return o}
 
     function getMousePos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
@@ -36,6 +40,24 @@
           x: evt.clientX - rect.left,
           y: evt.clientY - rect.top
         };
+    }
+
+    function downloadAllScreenshots(){
+      if(screenshots.length == 0){
+        paused = true;
+        alert("You don't have any screenshots to download.");
+      }
+      for(var i = 0; i < screenshots.length; i++){
+        var url = URL.createObjectURL(screenshots[i].blob);
+        download(url, screenshots[i].name);
+      }
+    }
+
+    function download(url, filename) {
+    	var link = document.createElement('a');
+    	link.setAttribute('href', url);
+    	link.setAttribute('download', filename);
+    	link.click();
     }
 
     function spawnrocket(x, y){
@@ -78,6 +100,11 @@
           shift = true;
         } else if(e.keyCode == 112){
           e.preventDefault();
+        } else if(e.keyCode == 113){
+          e.preventDefault();
+          screenshotpending = true;
+        } else if(e.keyCode == 68){
+          downloadAllScreenshots();
         }
       }
       window.onkeyup = function(e) {
@@ -107,6 +134,13 @@
     }
     window.oncontextmenu = function(e){
       e.preventDefault();
+    }
+    window.onbeforeunload = function(e){
+      if(screenshots.length > 0) {
+        var confirmationMessage = "Your have unsaved screenshots. Do you really want to delete them all?";
+        e.returnValue = confirmationMessage;
+        return confirmationMessage;
+      }
     }
 
     function addobj(x, y, state, movex, movey, lifetime, color) {
@@ -185,7 +219,13 @@
           modetext += " | Paused";
         }
         ctx.fillText(modetext, 5, 20);
+
+        if(screenshotsaved > 0){
+          ctx.fillText("Screenshot saved", 5, 40);
+        }
+
       }
+      screenshotsaved--;
       for(var i = 0; i < objs.length; i++) {
         if(objs[i].state == 0) {
           ctx.beginPath();
@@ -200,6 +240,16 @@
           ctx.rect(objs[i].x, objs[i].y, 5, 5);
           ctx.stroke();
         }
+      }
+      if(screenshotpending){
+        screenshotpending = false;
+        var dataurl = canvas.toDataURL("image/png");
+        var blob = dataURItoBlob(dataurl);
+        var currentdate = new Date();
+        var datestr = "Screenshot_" + currentdate.getFullYear() + "-" + (currentdate.getMonth()+1) + "-" + currentdate.getDate() + "_" + currentdate.getHours() + "." + currentdate.getMinutes() + "." + currentdate.getSeconds() + ".png";
+        var obj = {name: datestr, blob: blob};
+        screenshots.push(obj);
+        screenshotsaved = 30;
       }
     }
 
