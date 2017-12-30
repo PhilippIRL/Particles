@@ -16,23 +16,46 @@
     var canvas;
     var ctx;
     var objs = [];
+    var mousepos;
 
-    window.onload = function(){
+    window.onload = function() {
       start();
     }
 
-    function start(){
+    function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top
+        };
+    }
+
+    function start() {
       canvas = document.getElementById("canvas");
       ctx = canvas.getContext("2d");
+      canvas.onmousemove = function(e) {
+        mousepos = getMousePos(canvas, e);
+      }
+      canvas.onclick = function(e) {
+        var lt = getRandomInt(30, 75);
+        var speed = 10;
+        while(lt*speed > mousepos.y){
+          lt -= getRandomInt(3, 20);
+        }
+        addobj(mousepos.x, mousepos.y, 0, 0, speed*-1, lt, getRandomColor());
+      }
+      canvas.onscroll = function(e) {
+        console.log(2);
+      }
       window.setInterval(update, 25);
     }
 
-    function addobj(x, y, state, movex, movey, lifetime, color){
+    function addobj(x, y, state, movex, movey, lifetime, color) {
       var obj = {x: x, y: y, state: state, movex: movex, movey: movey, lifetime: lifetime, color: color};
       objs.push(obj);
     }
 
-    function update(){
+    function update() {
 
       for(var i = 0; i < objs.length; i++){
         if(objs[i].x < 0 || objs[i].x > canvas.width || objs[i].y < 0 || objs[i].y > canvas.height || objs[i].lifetime <= 0){
@@ -43,7 +66,7 @@
         }
       }
 
-      for(var i = 0; i < objs.length; i++){
+      for(var i = 0; i < objs.length; i++) {
         objs[i].x += objs[i].movex;
         objs[i].y += objs[i].movey;
         objs[i].lifetime--;
@@ -52,11 +75,20 @@
       draw();
     }
 
+    function getRandomColor() {
+      var letters = '0123456789ABCDEF';
+      var color = '#';
+      for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
     function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    function draw(){
+    function draw() {
       canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
       ctx.fillStyle = "rgb(0,0,0)";
@@ -78,8 +110,8 @@
       }
     }
 
-    function makeexp(x, y, color){
-      console.log("exp;x=" + x + ";y=" + y);
+    function makeexp(x, y, color) {
+      //console.log("exp;x=" + x + ";y=" + y);
 
       //RECHTS UNTEN
       addobj(x, y, 1, 1, 1, getRandomInt(30, 50), color);
