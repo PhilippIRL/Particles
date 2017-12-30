@@ -85,6 +85,9 @@
         }
       }
     }
+    window.oncontextmenu = function(e){
+      e.preventDefault();
+    }
 
     function addobj(x, y, state, movex, movey, lifetime, color) {
       var obj = {x: x, y: y, state: state, movex: movex, movey: movey, lifetime: lifetime, color: color};
