@@ -20,6 +20,7 @@
     var mode = 0;
     var paused = false;
     var autocooldown = 0;
+    var shift = false;
 
     window.onload = function() {
       start();
@@ -57,17 +58,30 @@
         console.log(2);
       }
       window.setInterval(update, 25);
-      window.onkeyup = function(e){
+      window.onkeydown = function(e) {
+        if(e.keyCode == 16){
+          shift = true;
+        }
+      }
+      window.onkeyup = function(e) {
         if(e.keyCode == 77){
           e.preventDefault();
-          if(mode == 1) {
-            mode = 0;
-          } else if(mode == 0) {
+          if(shift && mode == 1){
+            mode = 2;
+          } else if(mode == 2) {
             mode = 1;
+          } else {
+            if(mode == 1) {
+              mode = 0;
+            } else if(mode == 0) {
+              mode = 1;
+            }
           }
         } else if(e.keyCode == 80){
           e.preventDefault();
           paused = !paused;
+        } else if(e.keyCode == 16){
+          shift = false;
         }
       }
     }
@@ -103,6 +117,12 @@
           }
         }
 
+        if(mode == 2) {
+          for(var i = 0; i < 5; i++){
+            spawnrocket(getRandomInt(10, window.innerWidth-10), window.innerHeight - getRandomInt(0, window.innerHeight < 200 ? 50 : 200), 0, 0, -10);
+          }
+        }
+
 
 
       }
@@ -132,8 +152,10 @@
       var modetext = "";
       if(mode == 0){
         modetext = "Manual Mode";
-      } else if(mode == 1){
+      } else if(mode == 1) {
         modetext = "Automatic Mode";
+      } else if(mode == 2) {
+        modetext = "Arabischer Modus xD";
       }
       if(paused){
         modetext += " | Paused";
