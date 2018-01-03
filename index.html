@@ -51,6 +51,7 @@
         var url = URL.createObjectURL(screenshots[i].blob);
         download(url, screenshots[i].name);
       }
+      screenshots = [];
     }
 
     function download(url, filename) {
