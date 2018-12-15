@@ -61,13 +61,18 @@
     	link.click();
     }
 
-    function spawnrocket(x, y){
+    function spawnrocket(x, y, movex){
       var lt = getRandomInt(30, 75);
       var speed = 10;
       while(lt*speed > y){
         lt -= getRandomInt(3, 20);
       }
-      addobj(x, y, 0, 0, speed*-1, lt, getRandomColor());
+      addobj(x, y, 0, movex, speed*-1, lt, getRandomColor());
+    }
+
+    function spawnbomb(x, y) {
+      var speed = 5;
+      addobj(x, y, 2, 0, speed, 100, getRandomColor());
     }
 
     function start() {
@@ -89,7 +94,11 @@
       }
       canvas.onclick = function(e) {
         if(!paused && mode == 0){
-          spawnrocket(mousepos.x, mousepos.y);
+          if(shift) {
+            spawnbomb(mousepos.x, mousepos.y);
+          } else {
+            spawnrocket(mousepos.x, mousepos.y, 0);
+          }
         }
       }
       canvas.onscroll = function(e) {
@@ -144,8 +153,8 @@
       }
     }
 
-    function addobj(x, y, state, movex, movey, lifetime, color) {
-      var obj = {x: x, y: y, state: state, movex: movex, movey: movey, lifetime: lifetime, color: color};
+    function addobj(x, y, state, movex, movey, lifetime, color, data) {
+      var obj = {x: x, y: y, state: state, movex: movex, movey: movey, lifetime: lifetime, color: color, data: data};
       objs.push(obj);
     }
 
@@ -155,6 +164,13 @@
           if(objs[i].x < 0 || objs[i].x > canvas.width || objs[i].y < 0 || objs[i].y > canvas.height || objs[i].lifetime <= 0){
             if(objs[i].state == 0){
               makeexp(objs[i].x, objs[i].y, objs[i].color);
+            } else if(objs[i].state == 2) {
+              var offset = canvas.height - objs[i].y;
+              spawnrocket(objs[i].x, objs[i].y-10+offset, 0);
+              spawnrocket(objs[i].x, objs[i].y-10+offset, 1);
+              spawnrocket(objs[i].x, objs[i].y-10+offset, -1);
+              spawnrocket(objs[i].x, objs[i].y-10+offset, 2);
+              spawnrocket(objs[i].x, objs[i].y-10+offset, -2);
             }
             objs.splice(i, 1);
           }
@@ -164,11 +180,14 @@
           objs[i].x += objs[i].movex;
           objs[i].y += objs[i].movey;
           objs[i].lifetime--;
+          if(objs[i].state == 2) {
+            objs[i].movey += 1;
+          }
         }
 
         if(mode == 1) {
           if(autocooldown == 0) {
-            spawnrocket(getRandomInt(10, window.innerWidth-10), window.innerHeight - getRandomInt(0, window.innerHeight < 200 ? 50 : 200), 0, 0, -10);
+            spawnrocket(getRandomInt(10, window.innerWidth-10), window.innerHeight - getRandomInt(0, window.innerHeight < 200 ? 50 : 200), 0, 0);
             autocooldown = 2;
           } else {
             autocooldown--;
@@ -177,10 +196,9 @@
 
         if(mode == 2) {
           for(var i = 0; i < 5; i++){
-            spawnrocket(getRandomInt(10, window.innerWidth-10), window.innerHeight - getRandomInt(0, window.innerHeight < 200 ? 50 : 200), 0, 0, -10);
+            spawnrocket(getRandomInt(10, window.innerWidth-10), window.innerHeight - getRandomInt(0, window.innerHeight < 200 ? 50 : 200), 0, 0);
           }
         }
-
 
 
       }
@@ -239,6 +257,12 @@
           ctx.lineWidth="1";
           ctx.strokeStyle = objs[i].color;
           ctx.rect(objs[i].x, objs[i].y, 5, 5);
+          ctx.stroke();
+        } else if(objs[i].state == 2) {
+          ctx.beginPath();
+          ctx.lineWidth="1";
+          ctx.strokeStyle = "rgb(255,100,100)";
+          ctx.rect(objs[i].x, objs[i].y, 10, 10);
           ctx.stroke();
         }
       }
